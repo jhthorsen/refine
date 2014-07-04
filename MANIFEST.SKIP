@@ -1,0 +1,13 @@
+\.bak
+\.git
+\.old
+\.ship\.config
+\.swp
+~$
+^blib/
+^cover_db/
+^local/
+^Makefile$
+^MANIFEST.*
+^MYMETA*
+^README.pod
