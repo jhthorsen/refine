@@ -2,7 +2,7 @@ package Refine;
 
 =head1 NAME
 
-Refine - Refine a class to your desire
+Refine - Refine an instance with new methods
 
 =head1 VERSION
 
@@ -11,7 +11,9 @@ Refine - Refine a class to your desire
 =head1 DESCRIPTION
 
 L<Refine> is a module that export C<$_refine> which can be used to add
-methods object instances.
+methods object instances. Each C<$_refine> call on the object will create a
+new class with the new refined methods and rebless the instance into that
+class, which keeps the original class as it was.
 
 This is an EXPERIMENTAL release. The class generator might change in future releases.
 
