@@ -13,6 +13,8 @@ Refine - Refine a class to your desire
 L<Refine> is a module that export C<$_refine> which can be used to add
 methods object instances.
 
+This is an EXPERIMENTAL release. The class generator might change in future releases.
+
 =head1 SYNOPSIS
 
   use Refine;
