@@ -41,21 +41,32 @@ my %PRIVATE2PUBLIC;
 
 our $_refine = sub {
   my ($self, %patch) = @_;
-  my $class = ref $self || $self;
+  my $class = ref $self;
   my $private_name = join ':', $class, map { $_, $patch{$_} } sort keys %patch;
   my $refined_class = $PRIVATE2PUBLIC{$private_name};
 
+  unless ($class) {
+    Carp::confess("Can only add methods to instances, not $self");
+  }
+
   unless ($refined_class) {
+    my $base_class = $class;
+
+    if ($class =~ s!::WITH::(.*)!!) {
+      $patch{$_} ||= '' for grep { !/^_\d+$/ } split /::/, $1;
+    }
+
     my $i = 0;
-    my $public_name = substr +("$class\::__WITH__::" .join '::', sort keys %patch), 0, 180;
+    my $public_name = substr +("$class\::WITH::" .join '::', sort keys %patch), 0, 180;
+
     do {
       $refined_class = "$public_name\::_$i";
       $i++;
     } while ($refined_class->can('new'));
     $PRIVATE2PUBLIC{$private_name} = $refined_class;
-    eval "package $refined_class;use base '$class';1" or Carp::confess($@);
+    eval "package $refined_class;use base '$base_class';1" or Carp::confess("Failed to refine $class: $@");
     no strict 'refs';
-    *{"$refined_class\::$_"} = $patch{$_} for keys %patch;
+    *{"$refined_class\::$_"} = $patch{$_} for grep { $patch{$_} } keys %patch;
   }
 
   no strict 'refs';

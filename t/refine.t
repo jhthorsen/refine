@@ -15,18 +15,23 @@ TEST_CLASS
   ok !$t->can('other_method'), 'other_method() is not defined';
 
   add_methods($t);
-  is ref $t, 'Test::Class::__WITH__::dump::other_method::_0', 'Test::Class::__WITH__::dump::other_method::_0';
+  is ref $t, 'Test::Class::WITH::dump::other_method::_0', 'Test::Class::WITH::dump::other_method::_0';
   isa_ok($t, 'Test::Class');
   is $t->other_method, 42, 'other_method() on t';
   is $t->dump, $t, 't->dump is redefined';
 
   my $t = Test::Class->new;
   add_methods($t);
-  is ref $t, 'Test::Class::__WITH__::dump::other_method::_0', 'cached class';
+  is ref $t, 'Test::Class::WITH::dump::other_method::_0', 'cached class';
 
   my $t = Test::Class->new;
   $t->$_refine(dump => sub { $_[0] }, other_method => sub { 42 });
-  is ref $t, 'Test::Class::__WITH__::dump::other_method::_1', 'Test::Class::__WITH__::dump::other_method::_1';
+  is ref $t, 'Test::Class::WITH::dump::other_method::_1', 'Test::Class::WITH::dump::other_method::_1';
+}
+
+{
+  eval { Test::Class->$_refine(foo => sub { 123 }) };
+  like $@, qr{Can only add}, 'Cannot refine classes';
 }
 
 done_testing;
