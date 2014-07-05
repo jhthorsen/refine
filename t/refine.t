@@ -1,5 +1,6 @@
 use strict;
 use Test::More;
+use lib 't/disable-sub-name';
 use Refine;
 
 eval <<'TEST_CLASS' or die $@;
@@ -32,6 +33,15 @@ TEST_CLASS
 {
   eval { Test::Class->$_refine(foo => sub { 123 }) };
   like $@, qr{Can only add}, 'Cannot refine classes';
+}
+
+SKIP: {
+  skip 'Sub::Name might be available', 1 unless -r 't/disable-sub-name/Sub/Name.pm';
+  my $t = Test::Class->new;
+  $t->$_refine(throw => sub { Carp::confess('yikes!') });
+
+  eval { $t->throw };
+  like $@, qr{\bmain::__ANON__\(}, 'throw() has anon sub name';
 }
 
 done_testing;

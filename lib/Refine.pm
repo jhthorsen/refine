@@ -29,11 +29,23 @@ This is an EXPERIMENTAL release. The class generator might change in future rele
     dump => sub { Data::Dumper->new([$_[0])->Terse(1)->SortKeys(1)->Dump },
   );
 
+=head1 OPTIONAL MODULES
+
+=over 4
+
+=item * Sub::Name
+
+If you have L<Sub::Name> installed, the methods will have proper names,
+instead of "__ANON__". This will make stacktraces easier to read.
+
+=back
+
 =cut
 
 use strict;
 use warnings;
 use Carp ();
+use constant SUB_NAME => eval 'require Sub::Name;1' ? 1 : 0;
 use base 'Exporter';
 
 our $VERSION = '0.01';
@@ -67,8 +79,11 @@ our $_refine = sub {
     } while ($refined_class->can('new'));
     $PRIVATE2PUBLIC{$private_name} = $refined_class;
     eval "package $refined_class;use base '$base_class';1" or Carp::confess("Failed to refine $class: $@");
-    no strict 'refs';
-    *{"$refined_class\::$_"} = $patch{$_} for grep { $patch{$_} } keys %patch;
+
+    for my $n (grep { $patch{$_} } keys %patch) {
+      no strict 'refs';
+      *{"$refined_class\::$n"} = SUB_NAME ? Sub::Name::subname("$refined_class\::$n", $patch{$n}) : $patch{$n};
+    }
   }
 
   no strict 'refs';
