@@ -33,6 +33,14 @@ This is an EXPERIMENTAL release. The class generator might change in future rele
 
 =over 4
 
+=item * Package::Anon
+
+If you have L<Package::Anon> installed, the generated classes will not pollute
+the global namespace, but rather be truly a private class.
+
+This is currently experimental, and need to be enabled by setting the
+C<REFINE_PACKAGE_ANON> environment variable to a true value.
+
 =item * Sub::Name
 
 If you have L<Sub::Name> installed, the methods will have proper names,
@@ -45,6 +53,7 @@ instead of "__ANON__". This will make stacktraces easier to read.
 use strict;
 use warnings;
 use Carp ();
+use constant PACKAGE_ANON => ($ENV{REFINE_PACKAGE_ANON} and eval 'require Package::Anon;1') ? 1 : 0;
 use constant SUB_NAME => eval 'require Sub::Name;1' ? 1 : 0;
 use base 'Exporter';
 
@@ -65,29 +74,40 @@ our $_refine = sub {
 
   unless ($refined_class) {
     my $base_class = $class;
+    my $i = 0;
+    my $public_name;
 
     if ($class =~ s!::WITH::(.*)!!) {
       $patch{$_} ||= '' for grep { !/^_\d+$/ } split /::/, $1;
     }
 
-    my $i = 0;
-    my $public_name = substr +("$class\::WITH::" .join '::', sort keys %patch), 0, 180;
+    $public_name = substr +("$class\::WITH::" .join '::', sort keys %patch), 0, 180;
 
     do {
       $refined_class = "$public_name\::_$i";
       $i++;
     } while ($refined_class->can('new'));
-    $PRIVATE2PUBLIC{$private_name} = $refined_class;
-    eval "package $refined_class;use base '$base_class';1" or Carp::confess("Failed to refine $class: $@");
 
-    for my $n (grep { $patch{$_} } keys %patch) {
-      no strict 'refs';
-      *{"$refined_class\::$n"} = SUB_NAME ? Sub::Name::subname("$refined_class\::$n", $patch{$n}) : $patch{$n};
+    if (PACKAGE_ANON) {
+      $refined_class = Package::Anon->new($refined_class);
+      $refined_class->add_method($_ => $patch{$_}) for grep { $patch{$_} } keys %patch;
+      my $isa = $refined_class->install_glob('ISA');
+      my @isa = ($base_class);
+      *$isa = \@isa;
     }
+    else {
+      eval "package $refined_class;use base '$base_class';1" or Carp::confess("Failed to refine $class: $@");
+
+      for my $n (grep { $patch{$_} } keys %patch) {
+        no strict 'refs';
+        *{"$refined_class\::$n"} = SUB_NAME ? Sub::Name::subname("$refined_class\::$n", $patch{$n}) : $patch{$n};
+      }
+    }
+
+    $PRIVATE2PUBLIC{$private_name} = $refined_class;
   }
 
-  no strict 'refs';
-  bless $self, $refined_class;
+  ref $refined_class ? $refined_class->bless($self) : bless $self, $refined_class;
   $self;
 };
 
