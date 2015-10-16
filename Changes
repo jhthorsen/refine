@@ -1,11 +1,10 @@
-Changelog for Refine
+Revision history for perl distribution Refine
 
+0.03 Not Released
+ - Updated basic repo files
 
-0.02     Sun Jul  6 00:59:07 2014
-       * Add proper function names with Sub::Name
+0.02 2014-07-06T00:59:07Z
+ - Add proper function names with Sub::Name
 
-
-0.01     Sun Jul  6 00:59:07 2014
-Fri Jul  4 12:50:08 2014
-       * Add $_refine function
-
+0.01 2014-07-04T12:50:08Z
+ - Add $_refine function

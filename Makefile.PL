@@ -6,6 +6,7 @@ WriteMakefile(
   LICENSE => 'artistic_2',
   ABSTRACT_FROM => 'lib/Refine.pm',
   VERSION_FROM => 'lib/Refine.pm',
+  EXE_FILES => [qw(  )],
   META_MERGE => {
     resources => {
       bugtracker => 'https://github.com/jhthorsen/refine/issues',
