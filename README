@@ -13,6 +13,16 @@ DESCRIPTION
     This is an EXPERIMENTAL release. The class generator might change in
     future releases.
 
+INSTALLATION
+
+To install this module, run the following commands:
+
+    perl Makefile.PL
+    make
+    make manifest
+    make test
+    make install
+
 SYNOPSIS
       use Refine;
       use Data::Dumper ();
